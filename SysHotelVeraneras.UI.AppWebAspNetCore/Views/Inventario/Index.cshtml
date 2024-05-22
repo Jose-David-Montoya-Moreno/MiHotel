@@ -1,0 +1,188 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    int numPage = 1;
+    int numRegistros = 0;
+    int numRegistrosPorPage = 10;
+    int[] tops = { 10, 20, 50, 100, 500, 1000, 10000, -1 };
+    int topActual = Convert.ToInt32(ViewBag.Top);
+    List<SysHotelVeraneras.EntidadesDeNegocio.Usuario> usuario = ViewBag.Usuario as List<SysHotelVeraneras.EntidadesDeNegocio.Usuario>;
+    List<SysHotelVeraneras.EntidadesDeNegocio.Brazalete> brazaletes = ViewBag.Brazalete as List<SysHotelVeraneras.EntidadesDeNegocio.Brazalete>;
+    List<SysHotelVeraneras.EntidadesDeNegocio.Inventario> inventario = ViewBag.Inventario as List<SysHotelVeraneras.EntidadesDeNegocio.Inventario>;
+
+}
+
+<h1>Buscar Ajustes de Inventario</h1>
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Index">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group text-center">
+                        <label class="control-label">Color de brazalete</label>
+                        <select name="IdBrazalete" class="form-control text-center">
+                            <option selected value="0">SELECCIONAR</option>
+                            @foreach (var item in brazaletes)
+                            {
+                                <option value="@item.IdBrazalete">@item.Color</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group text-center">
+                        <label for="Movimiento" class="control-label">Movimiento</label>
+                        <select name="Movimiento" for="Movimiento" class="form-control text-center">
+                            <option selected value="0">SELECCIONAR</option>
+                            <option value="1">Entrada</option>
+                            <option value="2">Salida</option>
+                        </select>
+                        <span validation-for="Movimiento" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="fechaInicio" class="control-label">Fecha de Inicio</label>
+                    <input type="date" id="fInicio" name="fInicio" class="form-control" />
+                </div>
+
+                <div class="col-md-4">
+                    <label for="fechaFin" class="control-label">Fecha de Fin</label>
+                    <input type="date" id="fFinal" name="fFinal" class="form-control" />
+                </div>
+            </div>
+    
+
+            @* BOTONES DE BUSCAR Y CREAR INVENTARIO*@
+
+            <div class="form-group" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-primary" style="background-color: #CDDEA7; color: white; border-color:#CDDEA7;">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+
+
+                <button type="button" class="btn btn-success" style="background-color: #ADC484; color: white; border-color:#ADC484;" onclick="window.location.href='@Url.Action("Ajuste")'">
+                    <i class="fas fa-plus"></i> Agregar
+                </button>
+            </div>
+
+
+        </form>
+        <button type="button" class="btn btn-secondary " style="float:right" onclick="printDiv('Imprimir')">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+    </div>
+</div>
+<div id="Imprimir">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Brazalete
+            </th>
+            <th>
+                Entrada/Salida
+            </th>
+            <th>
+                Saldo
+            </th>
+            <th>
+                Nuevo saldo
+            </th>
+            <th>
+                Fecha Registro
+            </th>
+            <th>
+                Responsable
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in inventario)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Brazalete.Color)
+                </td>
+                @if (item.Movimiento == 1)
+                {
+                    <td>Entrada</td>
+                }
+                else if (item.Movimiento == 2)
+                {
+                    <td>Salida</td>
+                }
+                else
+                {
+                    <td></td>
+                }
+                <td>
+                    @Html.DisplayFor(modelItem => item.Cantidad)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.NuevoSaldo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FechaRegistro)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Usuario.Nombre)
+                </td>
+            </tr>
+
+            numRegistros++;
+            if (numRegistros == numRegistrosPorPage)
+            {
+                numPage++;
+                numRegistros = 0;
+            }
+        }
+        @{
+            if (numRegistros == 0)
+            {
+                numPage--;
+            }
+        }
+    </tbody>
+</table>
+@if (numPage > 1)
+{
+    <div class="row" style="overflow:auto">
+        <div class="col-md-12">
+            <ul class="pagination paginationjs" data-numpage="@numPage" data-pageactive="1">
+                <li class="page-item" data-typepage="Previous"><a class="page-link" href="#">Previous</a></li>
+                @for (var i = 1; i <= numPage; i++)
+                {
+                    <li class="page-item" data-page="@i" data-typepage="Item"><a class="page-link" href="#">@i</a></li>
+                }
+                <li class="page-item" data-typepage="Next"><a class="page-link" href="#">Next</a></li>
+            </ul>
+        </div>
+    </div>
+}
+</div>
+
+<script>
+    function printDiv(divName) {
+        var printContents = document.getElementById(divName).innerHTML;
+        var originalContents = document.body.innerHTML;
+
+        // Remove the "Acciones" header and the buttons
+        printContents = printContents.replace(/<th colspan="4">Acciones<\/th>/, '');
+
+        // Replace the content of the specific <td> with an empty string
+        printContents = printContents.replace(/<td class="botonestabla".*?>[\s\S]*?<\/td>/g, '<td class="botonestabla"></td>');
+
+        document.body.innerHTML = printContents;
+
+        window.print();
+
+        document.body.innerHTML = originalContents;
+    }
+</script>
+
+<style>
+    @@media print {
+        .print-hide {
+            display: none !important;
+        }
+    }
+</style>
